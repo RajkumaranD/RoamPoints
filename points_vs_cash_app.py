@@ -4,8 +4,8 @@ from datetime import datetime
 from datetime import timedelta
 
 # -------------- CONFIG ---------------- #
-API_KEY = st.secrets["5f9G91I35qQSsbIztIAbzAcrSzItH3Am"]
-API_SECRET = st.secrets["ZDB0dhOydIQJJC5K"]
+API_KEY = st.secrets["API_KEY"]
+API_SECRET = st.secrets["API_SECRET"]
 
 # Replace with your own or expand later
 COMMON_AIRPORTS = {
