@@ -28,26 +28,25 @@ if st.button("Compare Programs"):
         st.write(f"💸 Cash price: **${cash_price:.2f}**")
 
         results = []
+for program in PROGRAMS:
+    # TEMPORARY: Skip real scraping, use estimated points for all programs
+    points = get_estimated_points(program, origin, destination)
 
-        for program in PROGRAMS:
-            # TEMPORARY: Skip live scraping inside Codespaces for Delta & United too
-            points = get_estimated_points(program, origin, destination)
+    if not points:
+        continue
 
-            if not points:
-                continue
+    cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
 
-            cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
+    results.append({
+        "Program": program,
+        "Points Required": points,
+        "Value/Point (¢)": cpp,
+        "Cost to Buy Points": f"${cost:.2f}",
+        "You Save": f"${savings:.2f}",
+        "Recommendation": recommendation
+    })
 
-            results.append({
-                "Program": program,
-                "Points Required": points,
-                "Value/Point (¢)": cpp,
-                "Cost to Buy Points": f"${cost:.2f}",
-                "You Save": f"${savings:.2f}",
-                "Recommendation": recommendation
-            })
-
-        if results:
+    if results:
             st.subheader("📊 Comparison Table")
             results_df = pd.DataFrame(results)
 
