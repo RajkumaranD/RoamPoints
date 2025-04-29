@@ -1,9 +1,9 @@
-# main.py
+# This will be the main entry point for the Streamlit app
+# It will call functions from scrapers.py, award_charts.py, and utils.py
 
 import streamlit as st
 from datetime import datetime, timedelta
-import pandas as pd
-from scrapers import get_delta_award_miles, get_united_award_miles
+# from scrapers import get_delta_award_miles, get_united_award_miles
 from award_charts import get_estimated_points
 from utils import get_flight_price, calculate_value_per_point, evaluate_redemption
 
@@ -30,8 +30,10 @@ if st.button("Compare Programs"):
         results = []
 
         for program in PROGRAMS:
-            # TEMPORARY: Skip live scraping inside Codespaces for Delta & United too
+            # TEMPORARY: Skip real scraping, use estimated points for all programs
             points = get_estimated_points(program, origin, destination)
+
+                points = get_estimated_points(program, origin, destination)
 
             if not points:
                 continue
@@ -49,15 +51,6 @@ if st.button("Compare Programs"):
 
         if results:
             st.subheader("📊 Comparison Table")
-            results_df = pd.DataFrame(results)
-
-            # Find and tag best value deal
-            best_index = results_df["Value/Point (¢)"].idxmax()
-            results_df.loc[best_index, "Recommendation"] += " ⭐ Best Deal"
-
-            # Sort by Value/Point descending
-            results_df = results_df.sort_values(by="Value/Point (¢)", ascending=False)
-
-            st.dataframe(results_df)
+            st.dataframe(results)
         else:
             st.warning("No program data available for this route/date.")
