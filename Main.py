@@ -1,5 +1,5 @@
 # This will be the main entry point for the Streamlit app
-# It will call functions from scrapers.py, award_charts.py, and utils.py
+# It will call functions from award_charts.py and utils.py
 
 import streamlit as st
 from datetime import datetime, timedelta
@@ -31,8 +31,6 @@ if st.button("Compare Programs"):
         for program in PROGRAMS:
             # TEMPORARY: Skip real scraping, use estimated points for all programs
             points = get_estimated_points(program, origin, destination)
-
-                points = get_estimated_points(program, origin, destination)
 
             if not points:
                 continue
