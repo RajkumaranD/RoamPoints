@@ -3,7 +3,6 @@
 
 import streamlit as st
 from datetime import datetime, timedelta
-# from scrapers import get_delta_award_miles, get_united_award_miles
 from award_charts import get_estimated_points
 from utils import get_flight_price, calculate_value_per_point, evaluate_redemption
 
