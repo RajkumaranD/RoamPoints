@@ -9,6 +9,27 @@ from utils import get_flight_price, calculate_value_per_point, evaluate_redempti
 PROGRAMS = ["Delta", "United", "American Airlines", "Qatar Airways", "Virgin Atlantic"]
 
 st.title("💰 RoamPoints: Flight Points vs Cash Evaluator")
+st.markdown("""
+# ✈️ Welcome to RoamPoints!
+
+RoamPoints helps you find out whether it's smarter to **redeem points** 🪙 or **pay cash** 💵 for your flights.
+
+✅ Compare live cash prices via Amadeus  
+✅ Estimate points required across airlines (Delta, United, AA, Qatar, Virgin Atlantic)  
+✅ See cost to buy points if needed  
+✅ Get a recommendation: **Use Points** or **Pay Cash**
+
+### How it works:
+1. Enter your **origin**, **destination**, and **travel date**  
+2. Select your **loyalty program** (or compare across programs)  
+3. Get a full breakdown: points needed, value-per-point, savings
+
+---
+
+> 🚀 Powered by real-time Amadeus API and award estimates.
+
+""")
+
 
 col1, col2 = st.columns(2)
 with col1:
