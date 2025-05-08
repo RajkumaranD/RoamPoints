@@ -36,7 +36,6 @@ with col2:
 flight_date = st.date_input("Departure Date", min_value=datetime.now() + timedelta(days=1))
 
 st.markdown("### 🚗 Optional: Expand Search Radius")
-search_radius = st.radio("How far are you willing to drive for a cheaper flight?", [0, 100, 150, 200], index=0) + timedelta(days=1))
 
 search_radius = st.radio("How far are you willing to drive for a cheaper flight?", [0, 100, 150, 200], index=0)
 
