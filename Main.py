@@ -1,6 +1,4 @@
-# This will be the main entry point for the Streamlit app
-# It will call functions from award_charts.py and utils.py
-
+# RoamPoints Main App
 import streamlit as st
 from datetime import datetime, timedelta
 from award_charts import get_estimated_points
@@ -8,7 +6,14 @@ from utils import get_flight_price, calculate_value_per_point, evaluate_redempti
 
 PROGRAMS = ["Delta", "United", "American Airlines", "Qatar Airways", "Virgin Atlantic"]
 
+NEARBY_AIRPORTS = {
+    "JFK": ["JFK", "LGA", "EWR", "PHL", "BOS"],
+    "SFO": ["SFO", "OAK", "SJC", "SMF"],
+    "ORD": ["ORD", "MDW", "MKE"]
+}
+
 st.title("💰 RoamPoints: Flight Points vs Cash Evaluator")
+
 st.markdown("""
 # ✈️ Welcome to RoamPoints!
 
@@ -19,17 +24,8 @@ RoamPoints helps you find out whether it's smarter to **redeem points** 🪙 or 
 ✅ See cost to buy points if needed  
 ✅ Get a recommendation: **Use Points** or **Pay Cash**
 
-### How it works:
-1. Enter your **origin**, **destination**, and **travel date**  
-2. Select your **loyalty program** (or compare across programs)  
-3. Get a full breakdown: points needed, value-per-point, savings
-
 ---
-
-> 🚀 Powered by real-time Amadeus API and award estimates.
-
 """)
-
 
 col1, col2 = st.columns(2)
 with col1:
@@ -39,19 +35,27 @@ with col2:
 
 flight_date = st.date_input("Departure Date", min_value=datetime.now() + timedelta(days=1))
 
-if st.button("Compare Programs"):
-    cash_price = get_flight_price(origin, destination, str(flight_date))
+search_radius = st.radio("How far are you willing to drive for a cheaper flight?", [0, 100, 150, 200], index=0)
 
-    if not cash_price:
-        st.error("Could not fetch flight price. Try again.")
-    else:
-        st.write(f"💸 Cash price: **${cash_price:.2f}**")
+if st.button("Compare Programs"):
+    airport_list = NEARBY_AIRPORTS.get(origin.upper(), [origin.upper()]) if search_radius > 0 else [origin.upper()]
+
+    all_results = []
+
+    for airport_code in airport_list:
+        st.subheader(f"Results for Origin: {airport_code}")
+        cash_price = get_flight_price(airport_code, destination.upper(), str(flight_date))
+
+        if not cash_price:
+            st.error(f"Could not fetch flight price from {airport_code}.")
+            continue
+
+        st.write(f"💸 Cash price from {airport_code}: **${cash_price:.2f}**")
 
         results = []
 
         for program in PROGRAMS:
-            # TEMPORARY: Skip real scraping, use estimated points for all programs
-            points = get_estimated_points(program, origin, destination)
+            points = get_estimated_points(program, airport_code, destination.upper())
 
             if not points:
                 continue
@@ -68,7 +72,6 @@ if st.button("Compare Programs"):
             })
 
         if results:
-            st.subheader("📊 Comparison Table")
             st.dataframe(results)
         else:
-            st.warning("No program data available for this route/date.")
+            st.warning(f"No program data available for airport {airport_code}.")
