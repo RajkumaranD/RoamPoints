@@ -61,7 +61,8 @@ if st.button("Compare Programs"):
 
             results = []
 
-            for program in PROGRAMS:
+            st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
+        for program in PROGRAMS:
                 points = get_estimated_points(program, airport_code, destination.upper())
                 if not points:
                     st.warning(f"No points returned for {program} from {airport_code}")
