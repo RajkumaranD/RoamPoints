@@ -63,10 +63,14 @@ if st.button("Compare Programs"):
 
             st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
             for program in PROGRAMS:
-                points = get_estimated_points(program, airport_code, destination.upper())
+                    try:
+                        points = get_estimated_points(program, airport_code, destination.upper())
                 if not points:
                     st.warning(f"No points returned for {program} from {airport_code}")
                     continue
+                    except Exception as e:
+                        st.error(f"⚠️ Error fetching points for {program}: {e}")
+                        continue
 
                 if not points:
                     continue
