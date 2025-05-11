@@ -64,23 +64,23 @@ if st.button("Compare Programs"):
             st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
             for program in PROGRAMS:
                 try:
-                points = get_estimated_points(program, airport_code, destination.upper())
-                if not points:
-                    st.warning(f"No points returned for {program} from {airport_code}")
-                    continue
+                    points = get_estimated_points(program, airport_code, destination.upper())
+                    if not points:
+                        st.warning(f"No points returned for {program} from {airport_code}")
+                        continue
 
-                cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
+                    cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
 
-                results.append({
-                    "Program": program,
-                    "Points Required": points,
-                    "Value/Point (¢)": float(cpp),
-                    "Cost to Buy Points": f"${cost:.2f}",
-                    "You Save": f"${savings:.2f}",
-                    "Recommendation": recommendation
-                })
+                    results.append({
+                        "Program": program,
+                        "Points Required": points,
+                        "Value/Point (¢)": float(cpp),
+                        "Cost to Buy Points": f"${cost:.2f}",
+                        "You Save": f"${savings:.2f}",
+                        "Recommendation": recommendation
+                    })
 
-                            except Exception as e:
+                except Exception as e:
                 st.error(f"⚠️ Error fetching points for {program}: {e}")
                 continue
 
