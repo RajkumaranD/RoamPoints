@@ -2,7 +2,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from award_charts import get_estimated_points
-from utils import get_flight_price, calculate_value_per_point, evaluate_redemption
+from utils import get_flight_price, evaluate_redemption
 
 PROGRAMS = ["Delta", "United", "American Airlines", "Qatar Airways", "Virgin Atlantic"]
 
@@ -20,10 +20,9 @@ st.markdown("""
 RoamPoints helps you find out whether it's smarter to **redeem points** 🪙 or **pay cash** 💵 for your flights.
 
 ✅ Compare live cash prices via Amadeus  
-✅ Estimate points required across airlines (Delta, United, AA, Qatar, Virgin Atlantic)  
+✅ Estimate points required across airlines  
 ✅ See cost to buy points if needed  
 ✅ Get a recommendation: **Use Points** or **Pay Cash**
-
 ---
 """)
 
@@ -46,9 +45,6 @@ search_radius = st.radio("How far are you willing to drive for a cheaper flight?
 if st.button("Compare Programs"):
     try:
         airport_list = NEARBY_AIRPORTS.get(origin.upper(), [origin.upper()]) if search_radius > 0 else [origin.upper()]
-
-        all_results = []
-
         for airport_code in airport_list:
             st.subheader(f"Results for Origin: {airport_code}")
             cash_price = get_flight_price(airport_code, destination.upper(), str(flight_date))
@@ -58,10 +54,9 @@ if st.button("Compare Programs"):
                 continue
 
             st.write(f"💸 Cash price from {airport_code}: **${cash_price:.2f}**")
-
             results = []
-
             st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
+
             for program in PROGRAMS:
                 try:
                     points = get_estimated_points(program, airport_code, destination.upper())
@@ -84,13 +79,11 @@ if st.button("Compare Programs"):
                     st.error(f"⚠️ Error fetching points for {program}: {e}")
                     continue
 
-            # ✅ Show best deal *per airport*
             if results:
                 best_deal = min(results, key=lambda x: float(x["Value/Point (¢)"]))
-                st.success(f"⭐ Best Deal Here: {best_deal['Program']} from {airport_code} — {float(best_deal['Value/Point (¢)']):.2f}¢/point")
+                st.success(f"⭐ Best Deal Here: {best_deal['Program']} from {airport_code} — {best_deal['Value/Point (¢)']:.2f}¢/point")
                 st.dataframe(results)
             else:
                 st.warning(f"No program data available for airport {airport_code}.")
-
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
