@@ -26,7 +26,9 @@ def get_estimated_points(program, origin, destination):
         }
     }
 
-    try:
-        return fallback_award_chart[program].get(route_key)
+        if route_key in fallback_award_chart.get(program, {}):
+        return fallback_award_chart[program][route_key]
+    else:
+        return None
     except KeyError:
         return None
