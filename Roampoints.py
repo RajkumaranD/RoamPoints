@@ -63,16 +63,10 @@ if st.button("Compare Programs"):
 
             st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
             for program in PROGRAMS:
-                    try:
-                        points = get_estimated_points(program, airport_code, destination.upper())
+                try:
+                points = get_estimated_points(program, airport_code, destination.upper())
                 if not points:
                     st.warning(f"No points returned for {program} from {airport_code}")
-                    continue
-                    except Exception as e:
-                        st.error(f"⚠️ Error fetching points for {program}: {e}")
-                        continue
-
-                if not points:
                     continue
 
                 cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
@@ -86,13 +80,17 @@ if st.button("Compare Programs"):
                     "Recommendation": recommendation
                 })
 
-            if results:
-                # Highlight the best value/point result
-                best_deal = min(results, key=lambda x: float(x["Value/Point (¢)"]))
-                st.success(f"⭐ Best Deal Here: {best_deal['Program']} from {airport_code} — {float(best_deal['Value/Point (¢)']):.2f}¢/point")
-                st.dataframe(results)
-            else:
-                st.warning(f"No program data available for airport {airport_code}.")
+                            except Exception as e:
+                st.error(f"⚠️ Error fetching points for {program}: {e}")
+                continue
+
+        if results:
+            # Highlight the best value/point result
+            best_deal = min(results, key=lambda x: float(x["Value/Point (¢)"]))
+            st.success(f"⭐ Best Deal Here: {best_deal['Program']} from {airport_code} — {float(best_deal['Value/Point (¢)']):.2f}¢/point")
+            st.dataframe(results)
+        else:
+            st.warning(f"No program data available for airport {airport_code}.")
 
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
