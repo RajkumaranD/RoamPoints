@@ -45,38 +45,44 @@ search_radius = st.radio("How far are you willing to drive for a cheaper flight?
 
 if st.button("Compare Programs"):
     try:
-    airport_list = NEARBY_AIRPORTS.get(origin.upper(), [origin.upper()]) if search_radius > 0 else [origin.upper()]
+        airport_list = NEARBY_AIRPORTS.get(origin.upper(), [origin.upper()]) if search_radius > 0 else [origin.upper()]
 
-    all_results = []
+        all_results = []
 
-    for airport_code in airport_list:
-        st.subheader(f"Results for Origin: {airport_code}")
-        cash_price = get_flight_price(airport_code, destination.upper(), str(flight_date))
+        for airport_code in airport_list:
+            st.subheader(f"Results for Origin: {airport_code}")
+            cash_price = get_flight_price(airport_code, destination.upper(), str(flight_date))
 
-        if not cash_price:
-            st.error(f"Could not fetch flight price from {airport_code}.")
-            continue
-
-        st.write(f"💸 Cash price from {airport_code}: **${cash_price:.2f}**")
-
-        results = []
-
-        for program in PROGRAMS:
-            points = get_estimated_points(program, airport_code, destination.upper())
-
-            if not points:
+            if not cash_price:
+                st.error(f"Could not fetch flight price from {airport_code}.")
                 continue
 
-            cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
+            st.write(f"💸 Cash price from {airport_code}: **${cash_price:.2f}**")
 
-            results.append({
-                "Program": program,
-                "Points Required": points,
-                "Value/Point (¢)": float(cpp),
-                "Cost to Buy Points": f"${cost:.2f}",
-                "You Save": f"${savings:.2f}",
-                "Recommendation": recommendation
-            })
+            results = []
+
+            st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
+            for program in PROGRAMS:
+            try:
+                points = get_estimated_points(program, airport_code, destination.upper())
+                if not points:
+                    st.warning(f"No points returned for {program} from {airport_code}")
+                    continue
+
+                cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
+
+                results.append({
+                    "Program": program,
+                    "Points Required": points,
+                    "Value/Point (¢)": float(cpp),
+                    "Cost to Buy Points": f"${cost:.2f}",
+                    "You Save": f"${savings:.2f}",
+                    "Recommendation": recommendation
+                })
+
+            except Exception as e:
+                st.error(f"⚠️ Error fetching points for {program}: {e}")
+                continue
 
         if results:
             # Highlight the best value/point result
@@ -85,5 +91,6 @@ if st.button("Compare Programs"):
             st.dataframe(results)
         else:
             st.warning(f"No program data available for airport {airport_code}.")
+
     except Exception as e:
         st.error(f"❌ Something went wrong: {e}")
