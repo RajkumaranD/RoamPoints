@@ -1,12 +1,13 @@
-import streamlit as st
 import requests
+import streamlit as st
+import random
 
-POINT_PURCHASE_COST = {
-    "United": 0.0175,
-    "Delta": 0.013,
-    "American Airlines": 0.014,
-    "Qatar Airways": 0.018,
-    "Virgin Atlantic": 0.015
+# Simulated cash price variance per airport
+CASH_VARIANCE = {
+    "LGA": (10, 40),
+    "EWR": (-20, 10),
+    "PHL": (20, 60),
+    "BOS": (-15, 30),
 }
 
 def get_amadeus_token():
@@ -17,16 +18,10 @@ def get_amadeus_token():
         "client_secret": st.secrets["API_SECRET"]
     }
     response = requests.post(url, data=data)
-    if response.status_code != 200:
-        st.error(f"Token Error: {response.text}")
     return response.json().get("access_token")
 
 def get_flight_price(origin, destination, date):
     token = get_amadeus_token()
-    if not token:
-        st.error("Token generation failed")
-        return None
-
     headers = {"Authorization": f"Bearer {token}"}
     url = "https://test.api.amadeus.com/v2/shopping/flight-offers"
     params = {
@@ -37,31 +32,42 @@ def get_flight_price(origin, destination, date):
         "currencyCode": "USD",
         "max": 1
     }
+
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
 
-    if response.status_code != 200:
-        st.error(f"Flight Price API Error: {response.text}")
+    if "data" in data and len(data["data"]) > 0:
+        base_price = float(data["data"][0]["price"]["total"])
+
+        # Apply randomized adjustment for alternate airports
+        if origin in CASH_VARIANCE:
+            offset = random.uniform(*CASH_VARIANCE[origin])
+            return round(base_price + offset, 2)
+
+        return base_price
+    else:
         return None
 
-    if "data" in data and len(data["data"]) > 0:
-        return float(data["data"][0]["price"]["total"])
+def calculate_value_per_point(cash_price, points_used):
+    return round((cash_price / points_used) * 100, 2) if points_used else 0
 
-    st.warning("No flight data found for given route/date.")
-    return None
+def evaluate_redemption(program, cash_price, points_used):
+    PROGRAM_POINT_VALUES = {
+        "United": 0.0175,
+        "Delta": 0.013,
+        "American Airlines": 0.014,
+        "Qatar Airways": 0.015,
+        "Virgin Atlantic": 0.015
+    }
 
-def calculate_value_per_point(cash_price, points):
-    return round((cash_price / points) * 100, 2)
-
-def evaluate_redemption(program, cash_price, points):
-    point_price = POINT_PURCHASE_COST.get(program, 0.015)
-    cost_to_buy = points * point_price
+    point_price = PROGRAM_POINT_VALUES.get(program, 0.014)
+    cost_to_buy = points_used * point_price
     savings = cash_price - cost_to_buy
-    cpp = calculate_value_per_point(cash_price, points)
+    value_per_point = calculate_value_per_point(cash_price, points_used)
 
     if cost_to_buy < cash_price:
         recommendation = f"✅ Buy points & redeem (saves ${savings:.2f})"
     else:
         recommendation = "❌ Pay cash (buying points costs more)"
 
-    return cpp, cost_to_buy, savings, recommendation
+    return value_per_point, cost_to_buy, savings, recommendation
