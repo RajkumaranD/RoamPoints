@@ -60,6 +60,12 @@ if st.button("Compare Programs"):
             for program in PROGRAMS:
                 try:
                     points = get_estimated_points(program, airport_code, destination.upper())
+
+                    # -1 = route not supported → skip silently
+                    if points == -1:
+                        continue
+
+                    # None or 0 = data error → show warning
                     if not points:
                         st.warning(f"No points returned for {program} from {airport_code}")
                         continue
