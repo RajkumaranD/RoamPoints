@@ -1,8 +1,8 @@
-# RoamPoints Main App
+# RoamPoints Main App (Refined UI)
 import streamlit as st
 from datetime import datetime, timedelta
 from award_charts import get_estimated_points
-from utils import get_flight_price, calculate_value_per_point, evaluate_redemption
+from utils import get_flight_price, evaluate_redemption
 
 PROGRAMS = ["Delta", "United", "American Airlines", "Qatar Airways", "Virgin Atlantic"]
 
@@ -12,85 +12,78 @@ NEARBY_AIRPORTS = {
     "ORD": ["ORD", "MDW", "MKE"]
 }
 
+# Sidebar Inputs
+st.sidebar.header("✈️ Flight Search Settings")
+origin = st.sidebar.text_input("Origin Airport Code", "JFK")
+destination = st.sidebar.text_input("Destination Airport Code", "LAX")
+flight_date = st.sidebar.date_input("Departure Date", min_value=datetime.now() + timedelta(days=1))
+
+search_radius = st.sidebar.radio(
+    "How far are you willing to drive for a cheaper flight?",
+    [0, 100, 150, 200],
+    index=0
+)
+
+compare = st.sidebar.button("🔍 Compare Programs")
+
+# Main UI
 st.title("💰 RoamPoints: Flight Points vs Cash Evaluator")
-
 st.markdown("""
-# ✈️ Welcome to RoamPoints!
-
-RoamPoints helps you find out whether it's smarter to **redeem points** 🪙 or **pay cash** 💵 for your flights.
-
-✅ Compare live cash prices via Amadeus  
-✅ Estimate points required across airlines (Delta, United, AA, Qatar, Virgin Atlantic)  
-✅ See cost to buy points if needed  
-✅ Get a recommendation: **Use Points** or **Pay Cash**
+RoamPoints helps you quickly figure out whether it's better to **redeem points** 🪙 or **pay cash** 💵 for a flight.
 
 ---
+
 """)
 
-col1, col2 = st.columns(2)
-with col1:
-    origin = st.text_input("Origin Airport Code (e.g., JFK)", "JFK")
-with col2:
-    destination = st.text_input("Destination Airport Code (e.g., LAX)", "LAX")
-
-flight_date = st.date_input("Departure Date", min_value=datetime.now() + timedelta(days=1))
-
-st.markdown("""
----
-### 🚗 Optional: Expand Search Radius
-If you're open to flying out of nearby airports, select how far you're willing to drive below:
-""")
-
-search_radius = st.radio("How far are you willing to drive for a cheaper flight?", [0, 100, 150, 200], index=0)
-
-if st.button("Compare Programs"):
+if compare:
     try:
+        st.markdown("### 🚦 Searching for best flight options...")
+
         airport_list = NEARBY_AIRPORTS.get(origin.upper(), [origin.upper()]) if search_radius > 0 else [origin.upper()]
-
-        all_results = []
-
         for airport_code in airport_list:
-            st.subheader(f"Results for Origin: {airport_code}")
+            st.markdown(f"---\n### 🛫 Origin: `{airport_code}`")
+
             cash_price = get_flight_price(airport_code, destination.upper(), str(flight_date))
 
             if not cash_price:
-                st.error(f"Could not fetch flight price from {airport_code}.")
+                st.error(f"❌ Could not fetch flight price from {airport_code}.")
                 continue
 
-            st.write(f"💸 Cash price from {airport_code}: **${cash_price:.2f}**")
+            st.metric(label="💵 Cash Price", value=f"${cash_price:.2f}")
 
             results = []
-
-            st.write(f"🔍 Checking programs for {airport_code}: {PROGRAMS}")
             for program in PROGRAMS:
-            try:
-                points = get_estimated_points(program, airport_code, destination.upper())
-                if not points:
-                    st.warning(f"No points returned for {program} from {airport_code}")
+                try:
+                    points = get_estimated_points(program, airport_code, destination.upper())
+
+                    if points == -1:
+                        continue  # Route unsupported, silently skip
+                    if not points:
+                        st.warning(f"⚠️ No points returned for {program} from {airport_code}")
+                        continue
+
+                    cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
+
+                    results.append({
+                        "Program": program,
+                        "Points Required": points,
+                        "Value/Point (¢)": float(cpp),
+                        "Cost to Buy Points": f"${cost:.2f}",
+                        "You Save": f"${savings:.2f}",
+                        "Recommendation": recommendation
+                    })
+                except Exception as e:
+                    st.error(f"⚠️ Error evaluating {program}: {e}")
                     continue
 
-                cpp, cost, savings, recommendation = evaluate_redemption(program, cash_price, points)
-
-                results.append({
-                    "Program": program,
-                    "Points Required": points,
-                    "Value/Point (¢)": float(cpp),
-                    "Cost to Buy Points": f"${cost:.2f}",
-                    "You Save": f"${savings:.2f}",
-                    "Recommendation": recommendation
-                })
-
-            except Exception as e:
-                st.error(f"⚠️ Error fetching points for {program}: {e}")
-                continue
-
-        if results:
-            # Highlight the best value/point result
-            best_deal = min(results, key=lambda x: float(x["Value/Point (¢)"]))
-            st.success(f"⭐ Best Deal Here: {best_deal['Program']} from {airport_code} — {float(best_deal['Value/Point (¢)']):.2f}¢/point")
-            st.dataframe(results)
-        else:
-            st.warning(f"No program data available for airport {airport_code}.")
-
+            if results:
+                best_deal = min(results, key=lambda x: float(x["Value/Point (¢)"]))
+                st.success(
+                    f"⭐ Best Deal: **{best_deal['Program']}** from `{airport_code}` — "
+                    f"**{best_deal['Value/Point (¢)']:.2f}¢/point**"
+                )
+                st.dataframe(results)
+            else:
+                st.warning(f"📭 No usable redemption data for `{airport_code}`.")
     except Exception as e:
-        st.error(f"❌ Something went wrong: {e}")
+        st.error(f"❌ An error occurred: {e}")
