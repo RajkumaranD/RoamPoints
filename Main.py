@@ -58,5 +58,5 @@ for program in PROGRAMS:
             results_df = results_df.sort_values(by="Value/Point (¢)", ascending=False)
 
             st.dataframe(results_df)
-        else:
+    else:
             st.warning("No program data available for this route/date.")
