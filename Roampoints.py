@@ -97,21 +97,21 @@ explore = st.button("🔎 Show Where I Can Go")
 
 AWARD_DESTINATIONS = {
     "Delta": {
-        "JFK-LAX": 55000,
-        "JFK-ATL": 25000,
-        "JFK-MIA": 32000,
-        "JFK-SEA": 60000,
-        "JFK-AUS": 42000,
+        "DFW-LGA": 55000,
+        "DFW-JFK": 55000,
+        "DFW-XNA": 30000,  # XNA = Bentonville/Fayetteville Airport
+        "JFK-DFW": 55000
     },
     "United": {
-        "JFK-ORD": 22000,
-        "JFK-DEN": 35000,
-        "JFK-SFO": 48000
+        "DFW-EWR": 50000,
+        "DFW-ORD": 45000,
+        "DFW-XNA": 25000
     },
     "American Airlines": {
-        "JFK-CLT": 20000,
-        "JFK-MIA": 25000,
-        "JFK-PHX": 50000
+        "DFW-LGA": 35000,
+        "DFW-JFK": 35000,
+        "DFW-XNA": 20000,
+        "XNA-DFW": 20000
     }
 }
 
