@@ -85,3 +85,56 @@ if st.session_state.get('trigger_search'):
 # -------------------- FOOTER --------------------
 st.markdown("---")
 st.caption("🚀 Built with ❤️ by RoamPoints | Powered by Amadeus API")
+# -------------------------------
+# 🌍 EXPLORE DESTINATIONS BY POINTS
+# -------------------------------
+st.markdown("---")
+st.markdown("## 🌍 Explore Destinations by Points You Have")
+
+program_input = st.selectbox("Loyalty Program", PROGRAMS, key="explore_program")
+points_available = st.number_input("How many points do you have?", min_value=1000, max_value=500000, step=1000, value=50000, key="explore_points")
+explore = st.button("🔎 Show Where I Can Go")
+
+AWARD_DESTINATIONS = {
+    "Delta": {
+        "JFK-LAX": 55000,
+        "JFK-ATL": 25000,
+        "JFK-MIA": 32000,
+        "JFK-SEA": 60000,
+        "JFK-AUS": 42000,
+    },
+    "United": {
+        "JFK-ORD": 22000,
+        "JFK-DEN": 35000,
+        "JFK-SFO": 48000
+    },
+    "American Airlines": {
+        "JFK-CLT": 20000,
+        "JFK-MIA": 25000,
+        "JFK-PHX": 50000
+    }
+}
+
+if explore:
+    matches = []
+    routes = AWARD_DESTINATIONS.get(program_input, {})
+    st.markdown(f"### ✈️ Destinations You Can Reach with `{points_available}` {program_input} Points:")
+
+    for route, pts in routes.items():
+        if pts <= points_available:
+            origin, dest = route.split("-")
+            cash_price = get_flight_price(origin, dest, str(flight_date))
+            cpp = calculate_value_per_point(cash_price, pts) if cash_price else None
+
+            matches.append({
+                "Route": route,
+                "Points Required": pts,
+                "Cash Price": f"${cash_price:.2f}" if cash_price else "N/A",
+                "Value/Point (¢)": f"{cpp:.2f}" if cpp else "N/A"
+            })
+
+    if matches:
+        st.dataframe(matches)
+    else:
+        st.warning("😔 No routes found under your point limit.")
+
