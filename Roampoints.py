@@ -13,8 +13,8 @@ NEARBY_AIRPORTS = {
 
 # -------------------- SIDEBAR INPUTS --------------------
 st.sidebar.header("🔍 Search Flight Redemption")
-origin = st.sidebar.text_input("Origin Airport Code", "JFK")
-destination = st.sidebar.text_input("Destination Airport Code", "LAX")
+origin = st.sidebar.text_input("Origin Airport Code", "DFW")
+destination = st.sidebar.text_input("Destination Airport Code", "JFK")
 flight_date = st.sidebar.date_input("Departure Date", min_value=datetime.now() + timedelta(days=1))
 
 search_radius = st.sidebar.radio(
